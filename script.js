@@ -54,7 +54,7 @@ const getTableHash = () => {
 const createPieChartFromTable = () => {
     const table = document.querySelector('.multitablewrapper table tbody');
     if (!table) {
-        console.error('Table not found!');
+        console.warn('Table not found!');
         return;
     }
 
