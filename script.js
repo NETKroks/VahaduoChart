@@ -282,6 +282,7 @@ const hookRunButton = () => {
     }
 
     runButton.addEventListener('click', () => {
+        console.log('Run button clicked, rendering chart...');
         setTimeout(() => {
             if (chartData) {
                 renderChart();
