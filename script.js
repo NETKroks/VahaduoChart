@@ -223,10 +223,10 @@ const toggleChart = (button, chartContainer) => {
             chartInstance = null;
         }
         chartContainer.style.display = 'none';
-        button.textContent = 'open\u00A0chart';
+        button.textContent = 'Open Chart';
     } else {
         chartContainer.style.display = 'block';
-        button.textContent = 'close\u00A0chart';
+        button.textContent = 'Close Chart';
         setTimeout(renderChart, 10);
     }
 };
