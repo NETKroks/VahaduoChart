@@ -245,12 +245,6 @@ const createChart = () => {
         <div id="ancestryChartSection" style="margin-top: 20px; text-align: center;"></div>
     `);
 
-    const title = createElement(`
-        <h3 style="margin: 0 0 15px 0; color: #ffffff; font-size: 18px;">
-            Genetic Ancestry Composition
-        </h3>
-    `);
-
     const chartContainer = createElement(`
         <div id="chartContainer" style="width: 800px; height: 600px; margin: 0 auto; position: relative;"></div>
     `);
@@ -277,7 +271,6 @@ const createChart = () => {
     buttonContainer.appendChild(toggleBtn);
     buttonContainer.appendChild(saveBtn);
 
-    chartSection.appendChild(title);
     chartSection.appendChild(chartContainer);
     chartSection.appendChild(buttonContainer);
 
