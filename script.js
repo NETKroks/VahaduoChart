@@ -1,5 +1,3 @@
-
-
 const createElement = (htmlString) => {
     const template = document.createElement('template');
     template.innerHTML = htmlString.trim();
@@ -7,19 +5,16 @@ const createElement = (htmlString) => {
 };
 
 const generateColorsAdvanced = (count) => {
-    const baseColors = [
-        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
-        '#FF9F40', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4',
-        '#FECA57', '#FF9FF3'
-    ];
-
     if (count <= 12) {
+        const baseColors = [
+            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+            '#FF9F40', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4',
+            '#FECA57', '#FF9FF3'
+        ];
         return baseColors.slice(0, count);
     }
 
-    const colors = [...baseColors];
-    count -= baseColors.length;
-
+    const colors = [];
     const goldenRatio = 0.618033988749895;
     let hue = Math.random();
 
@@ -44,6 +39,17 @@ const calculateStdDev = (values) => {
 
 let chartData = null;
 let chartInstance = null;
+let lastTableHash = null;
+
+const getTableHash = () => {
+    const table = document.querySelector('.multitablewrapper table tbody');
+    if (!table) return null;
+
+    const avgRow = table.querySelector('tr:last-child td.multitargets');
+    if (!avgRow || avgRow.textContent.trim() !== 'Average') return null;
+
+    return table.innerHTML.length + '_' + table.querySelectorAll('tr').length;
+};
 
 const createPieChartFromTable = () => {
     const table = document.querySelector('.multitablewrapper table tbody');
@@ -113,12 +119,12 @@ const createPieChartFromTable = () => {
     }
 
     const filteredData = Object.entries(ancestryDataWithStdDev)
-        .filter(([, data]) => data.mean >= 1.0)
+        .filter(([name, data]) => data.mean >= 1.0)
         .sort((a, b) => b[1].mean - a[1].mean);
 
     if (filteredData.length === 0) {
         const lowFilterData = Object.entries(ancestryDataWithStdDev)
-            .filter(([, data]) => data.mean >= 0.1)
+            .filter(([name, data]) => data.mean >= 0.1)
             .sort((a, b) => b[1].mean - a[1].mean);
 
         if (lowFilterData.length === 0) {
@@ -217,11 +223,11 @@ const toggleChart = (button, chartContainer) => {
             chartInstance = null;
         }
         chartContainer.style.display = 'none';
-        button.textContent = 'Open Chart';
+        button.textContent = 'open\u00A0chart';
     } else {
         chartContainer.style.display = 'block';
-        button.textContent = 'Close Chart';
-        setTimeout(renderChart, 100);
+        button.textContent = 'close\u00A0chart';
+        setTimeout(renderChart, 10);
     }
 };
 
@@ -239,6 +245,11 @@ const createChart = () => {
         <div id="ancestryChartSection" style="margin-top: 20px; text-align: center;"></div>
     `);
 
+    const title = createElement(`
+        <h3 style="margin: 0 0 15px 0; color: #ffffff; font-size: 18px;">
+            Genetic Ancestry Composition
+        </h3>
+    `);
 
     const chartContainer = createElement(`
         <div id="chartContainer" style="width: 800px; height: 600px; margin: 0 auto; position: relative;"></div>
@@ -266,6 +277,7 @@ const createChart = () => {
     buttonContainer.appendChild(toggleBtn);
     buttonContainer.appendChild(saveBtn);
 
+    chartSection.appendChild(title);
     chartSection.appendChild(chartContainer);
     chartSection.appendChild(buttonContainer);
 
@@ -274,39 +286,43 @@ const createChart = () => {
     renderChart();
 };
 
-const hookRunButton = () => {
-    const runButton = document.getElementById('runmulti');
-    if (!runButton) {
-        console.error('Run button not found!');
-        return;
+const checkForTableChanges = () => {
+    const currentHash = getTableHash();
+
+    if (currentHash && currentHash !== lastTableHash) {
+        console.log('Table change detected, rendering chart...');
+        lastTableHash = currentHash;
+        setTimeout(createPieChartFromTable, 200);
     }
+};
 
-    runButton.addEventListener('click', () => {
-        console.log('Run button clicked, rendering chart...');
-        setTimeout(() => {
-            if (chartData) {
-                renderChart();
-            } else {
-                createPieChartFromTable();
-            }
-        }, 100);
+const setupObserver = () => {
+    const multiOutput = document.getElementById('multioutput');
+    if (!multiOutput) return;
+
+    const observer = new MutationObserver(() => {
+        checkForTableChanges();
     });
-}
 
+    observer.observe(multiOutput, {
+        childList: true,
+        subtree: true,
+        characterData: true,
+        attributes: true
+    });
 
-const initializeChartJs = () => {
+    setInterval(checkForTableChanges, 500);
+};
+
+if (typeof Chart === 'undefined') {
     const script = document.createElement('script');
     script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
     script.onload = () => {
         createPieChartFromTable();
+        setupObserver();
     };
     document.head.appendChild(script);
+} else {
+    createPieChartFromTable();
+    setupObserver();
 }
-
-hookRunButton();
-if (typeof Chart === 'undefined') {
-    injectChartJs();
-    return;
-}
-
-createPieChartFromTable();
