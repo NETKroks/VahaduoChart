@@ -274,6 +274,25 @@ const createChart = () => {
     renderChart();
 };
 
+const hookRunButton = () => {
+    const runButton = document.getElementById('runmulti');
+    if (!runButton) {
+        console.error('Run button not found!');
+        return;
+    }
+
+    runButton.addEventListener('click', () => {
+        setTimeout(() => {
+            if (chartData) {
+                renderChart();
+            } else {
+                createPieChartFromTable();
+            }
+        }, 100);
+    });
+}
+
+
 const initializeChartJs = () => {
     const script = document.createElement('script');
     script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
@@ -283,6 +302,7 @@ const initializeChartJs = () => {
     document.head.appendChild(script);
 }
 
+hookRunButton();
 if (typeof Chart === 'undefined') {
     injectChartJs();
     return;
